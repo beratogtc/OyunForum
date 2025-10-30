@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oyun Forum</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
+
+        /* Renk Değişkenleri */
+        :root {
+            --primary-neon: #ff3333; 
+            --secondary-neon: #ffff33; 
+            --darkest-bg: #0d000d; 
+            --text-color: #f0f0f0; 
+            --glass-bg: rgba(255, 255, 255, 0.03); 
+        }
+
+        /* Ana Sayfa Arka Plan ve Global Ayarlar */
+        body { 
+            background-color: var(--darkest-bg) !important; color: var(--text-color) !important; 
+            font-family: 'Rajdhani', sans-serif; 
+            background-image: url('https://i.hizliresim.com/9n9u8r5.png'); 
+            background-size: cover; background-attachment: fixed; position: relative;
+        }
+        body::before { 
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); background-image: linear-gradient(to top, rgba(255, 0, 0, 0.05), rgba(100, 0, 100, 0.05));
+            z-index: -1; 
+        }
+
+        /* Glassmorphism ve Border Efektleri */
+        .navbar, .card, .member-card, #giris-yap .card, #uye-ol .card {
+            background-color: var(--glass-bg); border: 1px solid var(--primary-neon); 
+            backdrop-filter: blur(4px); border-radius: 0; z-index: 10;
+        }
+
+        /* Navbar Stilleri */
+        .navbar-brand { color: var(--primary-neon) !important; text-shadow: 0 0 5px var(--primary-neon); font-weight: 700; }
+        .nav-link:hover { color: var(--secondary-neon) !important; border-bottom: 2px solid var(--secondary-neon); }
+        .dropdown-menu { background-color: var(--darkest-bg); border: 1px solid var(--primary-neon); border-radius: 0; }
+        .dropdown-item:hover { background-color: var(--primary-neon); color: var(--darkest-bg); }
+
+        /* Banner */
+        .forum-banner {
+            background: var(--darkest-bg); height: 250px; display: flex; align-items: center; justify-content: center;
+            border-bottom: 5px solid var(--primary-neon); text-shadow: 0 0 15px var(--primary-neon), 0 0 30px var(--secondary-neon);
+            font-size: 3rem; font-weight: 700; 
+        }
+        
+        /* Neon Butonlar */
+        .btn-premium {
+            background-color: var(--primary-neon); color: var(--darkest-bg); box-shadow: 0 0 10px var(--primary-neon); 
+            border: none; border-radius: 0; transition: all 0.2s; font-weight: 600;
+        }
+        .btn-premium:hover { background-color: var(--secondary-neon); box-shadow: 0 0 15px var(--secondary-neon); }
+        .btn-secondary-neon {
+            color: var(--secondary-neon); border: 1px solid var(--secondary-neon); background-color: transparent; border-radius: 0; font-weight: 600;
+        }
+        .btn-secondary-neon:hover { color: var(--darkest-bg); background-color: var(--secondary-neon); box-shadow: 0 0 5px var(--secondary-neon); }
+
+        /* Haber ve Kategori Stilleri */
+        .news-item { border-left: 3px solid var(--secondary-neon); padding-left: 15px; margin-bottom: 10px; transition: background-color 0.3s; }
+        .news-item:hover { background-color: rgba(255, 255, 51, 0.05); }
+        .news-title { color: var(--secondary-neon) !important; font-weight: 600; }
+        .news-detail-container { background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--secondary-neon); border-radius: 0; padding: 30px; }
+        .news-detail-img { width: 100%; height: 350px; object-fit: cover; border: 2px solid var(--primary-neon); }
+        .game-card-img { height: 200px; object-fit: cover; width: 100%; filter: brightness(0.6) saturate(1.2); }
+        .card-title { color: var(--secondary-neon) !important; font-weight: 700; }
+        
+        /* Forum Konu Tablosu */
+        .thread-table tr:hover { background-color: rgba(255, 51, 51, 0.1); border-left: 3px solid var(--primary-neon); }
+        .thread-table th { color: var(--secondary-neon); border-bottom: 2px solid var(--primary-neon) !important; }
+        
+        /* Form Alanları */
+        .form-control, .input-group-text { background-color: var(--darkest-bg) !important; border: 1px solid var(--secondary-neon) !important; color: var(--text-color) !important; border-radius: 0 !important; }
+
+        /* Yapay Zeka Robotu Stilleri */
+        #aiChatButton {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 50%; width: 60px; height: 60px;
+            box-shadow: 0 0 15px var(--secondary-neon); background-color: var(--secondary-neon);
+            color: var(--darkest-bg); font-size: 1.8rem; border: 3px solid var(--darkest-bg); transition: transform 0.3s;
+        }
+        #aiChatWindow {
+            position: fixed; bottom: 90px; right: 20px; width: 350px; max-width: 90%; height: 450px; z-index: 999;
+            background-color: var(--darkest-bg); border: 2px solid var(--primary-neon); box-shadow: 0 0 25px var(--primary-neon);
+            border-radius: 0; display: flex; flex-direction: column;
+        }
+        #chatHeader { background-color: var(--primary-neon); color: var(--darkest-bg); font-weight: 700; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        #chatBody { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: rgba(255, 255, 255, 0.01); }
+        .chat-message-ai { border-left: 3px solid var(--secondary-neon); }
+        .chat-message-user { border-right: 3px solid var(--primary-neon); margin-left: auto; }
+        .chat-message-ai, .chat-message-user { padding: 8px 12px; margin-bottom: 10px; border-radius: 5px; font-size: 0.9rem; max-width: 85%; word-wrap: break-word; }
+        
+        /* Arama Vurgusu */
+        .highlight { background-color: var(--secondary-neon); color: var(--darkest-bg); padding: 2px; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-lg">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#ana-sayfa"><i class="bi bi-cpu me-2"></i> //OyunForum</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="#ana-sayfa">Ana Sayfa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#valorant-kategori">Forum</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="#uyeler-listesi">Üyeler</a></li>
+                </ul>
+                <div class="d-flex align-items-center me-2 mb-2 mb-lg-0">
+                    <a href="#giris-yap" class="btn btn-secondary-neon btn-sm me-2"><i class="bi bi-person-circle me-1"></i> Giriş Yap</a>
+                    <a href="#uye-ol" class="btn btn-premium btn-sm"><i class="bi bi-person-add me-1"></i> Üye Ol</a>
+                </div>
+                <form class="d-flex" id="searchForm">
+                    <input class="form-control me-2" type="search" placeholder="Forum arama..." id="searchInput">
+                    <button class="btn btn-secondary-neon" type="submit">ARA</button>
+                </form>
+                <div class="ms-3"> 
+                    <li class="nav-item dropdown list-unstyled"> 
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> Profilim
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="#profil-detaylari"><i class="bi bi-person-badge-fill me-2"></i> Hesap Detaylarım</a></li>
+                            <li><a class="dropdown-item" href="#ayarlar"><i class="bi bi-gear-fill me-2"></i> Ayarlarım</a></li>
+                            <li><hr class="dropdown-divider" style="border-top-color: var(--primary-neon);"></li>
+                            <li><a class="dropdown-item" href="#cikis-yap" style="color: var(--primary-neon);"><i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap</a></li>
+                        </ul>
+                    </li>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section id="ana-sayfa">
+        <div class="forum-banner mb-5"><h1>BÜYÜK OYUNLAR. BÜYÜK TARTIŞMALAR.</h1></div>
+        <div class="container my-5">
+            <h2 class="text-secondary-neon mb-4 border-bottom border-primary pb-2"><i class="bi bi-megaphone-fill me-2"></i> 🚨 SON DAKİKA: Güncel Oyun Haberleri</h2>
+            <div class="card shadow-lg mb-5">
+                <div class="card-body p-4">
+                    <div class="news-item"><a href="#haber-detay" data-news-id="1" class="news-title text-decoration-none">VALORANT: Yeni Ajan "Cyborg" Çıktı! Erken İzlenimler</a> <span class="badge" style="background-color: var(--primary-neon);">VALORANT</span></div>
+                    <div class="news-item"><a href="#haber-detay" data-news-id="2" class="news-title text-decoration-none">CS2 Major Turnuvası Finalleri Ne Zaman Başlıyor? Takımlar Belli Oldu</a> <span class="badge" style="background-color: var(--secondary-neon); color: black;">CS2</span></div>
+                    <div class="news-item"><a href="#haber-detay" data-news-id="3" class="news-title text-decoration-none">RDR 2'nin Yeni Nesil Konsol Güncellemesi Sızıntıları</a> <span class="badge" style="background-color: var(--primary-neon);">RDR 2</span></div>
+                    <div class="news-item"><a href="#haber-detay" data-news-id="4" class="news-title text-decoration-none">Metin 2: Efsanevi Kılıçlar Tekrar Düşüyor Mu? GM Açıklaması</a> <span class="badge" style="background-color: var(--secondary-neon); color: black;">Metin 2</span></div>
+                </div>
+            </div>
+            
+            <h2 class="text-primary-neon mb-4 border-bottom border-secondary pb-2"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Öne Çıkan Oyun Kategorileri</h2>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6"><div class="card shadow-lg h-100 member-card"><img src="https://i.hizliresim.com/2mkt5ib.jpg" class="card-img-top game-card-img" alt="Valorant"><div class="card-body"><h5 class="card-title fw-bold">VALORANT FORUMU</h5><p class="card-text text-light">Taktikler, ajan seçimleri, harita stratejileri ve espor tartışmaları.</p><a href="#valorant-kategori" class="btn btn-premium w-100">Foruma Git</a></div></div></div>
+                <div class="col-lg-4 col-md-6"><div class="card shadow-lg h-100 member-card"><img src="https://i.hizliresim.com/o1ch9st.jpg" class="card-img-top game-card-img" alt="CS2"><div class="card-body"><h5 class="card-title fw-bold">COUNTER-STRIKE 2 (CS2) FORUMU</h5><p class="card-text text-light">Rütbe sistemleri, skinler, sunucu sorunları ve en son güncellemeler.</p><a href="#valorant-kategori" class="btn btn-premium w-100">Foruma Git</a></div></div></div>
+                <div class="col-lg-4 col-md-6"><div class="card shadow-lg h-100 member-card"><img src="https://i.hizliresim.com/kfz5sap.jpg" class="card-img-top game-card-img" alt="RDR 2"><div class="card-body"><h5 class="card-title fw-bold">RED DEAD REDEMPTION 2 FORUMU</h5><p class="card-text text-light">Hikaye, easter egg'ler, Arthur Morgan ve Vahşi Batı maceraları.</p><a href="#valorant-kategori" class="btn btn-premium w-100">Foruma Git</a></div></div></div>
+                <div class="col-lg-4 col-md-6"><div class="card shadow-lg h-100 member-card"><img src="https://i.hizliresim.com/r5su7dq.jpg" class="card-img-top game-card-img" alt="Metin 2"><div class="card-body"><h5 class="card-title fw-bold">METİN 2 FORUMU</h5><p class="card-text text-light">Pazar, serverlar, karakter gelişimleri ve nostaljik tartışmalar.</p><a href="#valorant-kategori" class="btn btn-premium w-100">Foruma Git</a></div></div></div>
+                <div class="col-lg-4 col-md-6"><div class="card shadow-lg h-100 member-card"><img src="https://i.hizliresim.com/na0t2mx.jpg" class="card-img-top game-card-img" alt="Genel"><div class="card-body"><h5 class="card-title fw-bold">GENEL OYUN FORUMU</h5><p class="card-text text-light">Tüm platformlar, yeni çıkan oyunlar ve donanım incelemeleri.</p><a href="#valorant-kategori" class="btn btn-premium w-100">Foruma Git</a></div></div></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="haber-detay" class="d-none">
+        <div class="container my-5">
+            <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="#ana-sayfa" class="text-secondary-neon text-decoration-none">Ana Sayfa</a></li><li class="breadcrumb-item active text-white" aria-current="page">Haber Detayları</li></ol></nav>
+            <div class="news-detail-container shadow-lg">
+                <h1 id="news-detail-title" class="text-primary-neon mb-3 fw-bold"></h1>
+                <div class="news-meta mb-4">
+                    <i class="bi bi-clock me-1"></i> Yayın Tarihi: <span id="news-detail-date"></span> | 
+                    <i class="bi bi-person me-1"></i> Yazar: <span id="news-detail-author" style="color: var(--secondary-neon);"></span> |
+                    <span class="badge" id="news-detail-tag"></span>
+                </div>
+                <img id="news-detail-image" src="" class="news-detail-img mb-4" alt="Haber Görseli">
+                <div id="news-detail-body" class="text-white-75" style="line-height: 1.8;"></div>
+                <div class="mt-5 pt-3 border-top border-secondary"><a href="#ana-sayfa" class="btn btn-secondary-neon"><i class="bi bi-arrow-left me-2"></i> Ana Sayfaya Dön</a></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="valorant-kategori" class="d-none"> 
+        <div class="container my-5">
+            <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="#ana-sayfa" class="text-secondary-neon text-decoration-none">Ana Sayfa</a></li><li class="breadcrumb-item active text-white" aria-current="page">Valorant Forumu</li></ol></nav>
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-primary pb-3">
+                <h2 class="text-primary-neon mb-0"><i class="bi bi-bullseye me-2"></i> VALORANT FORUMU Konuları</h2>
+                <a href="#" class="btn btn-premium"><i class="bi bi-chat-left-dots me-1"></i> Yeni Konu Aç</a>
+            </div>
+            <div class="card shadow-lg p-0">
+                <div class="table-responsive">
+                    <table class="table table-borderless table-dark thread-table mb-0">
+                        <thead><tr><th scope="col" class="text-start" style="width: 50%;">Konu Başlığı</th><th scope="col" class="text-center" style="width: 15%;">Yazan</th><th scope="col" class="text-center" style="width: 15%;">Cevap</th><th scope="col" class="text-center" style="width: 20%;">Son Mesaj</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-start"><a href="#" class="text-white text-decoration-none fw-bold">Yeni Gelen Ajanın Skilleri Hakkında İlk İzlenimler</a><div class="text-white-50 small">Etiketler: <span class="badge" style="background-color: var(--primary-neon) !important;">Yeni Ajan</span> <span class="badge" style="background-color: var(--secondary-neon) !important; color: black;">Taktik</span></div></td>
+                                <td class="text-center" style="color: var(--primary-neon);">CyberGamer</td><td class="text-center">152</td>
+                                <td class="text-center"><span class="text-white-50">Dün, 14:30</span><br><span class="small" style="color: var(--secondary-neon);">NeoKing</span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-start"><a href="#" class="text-white text-decoration-none">Split Haritasında Savunma Stratejileri</a></td>
+                                <td class="text-center" style="color: var(--primary-neon);">Rioter66</td><td class="text-center">45</td>
+                                <td class="text-center"><span class="text-white-50">Bugün, 10:00</span><br><span class="small" style="color: var(--secondary-neon);">AlphaUser</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="uyeler-listesi" class="d-none">
+        <div class="container my-5">
+            <h2 class="text-primary-neon mb-4 border-bottom border-primary pb-2"><i class="bi bi-people-fill me-2"></i> Oyun Forum: Forum Üyeleri</h2>
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-4 col-sm-6"><div class="card text-center p-3 h-100 member-card"><img src="https://i.hizliresim.com/6c9p4t9.png" class="rounded-circle mx-auto mb-2" alt="Avatar" width="80"><h5 style="color: var(--secondary-neon);" class="mb-1">CyberGamer</h5><span class="badge" style="background-color: var(--primary-neon);">Yönetici</span><p class="text-white-50 small mt-2 mb-0">Toplam Mesaj: 5,420</p><a href="#" class="btn btn-sm btn-secondary-neon mt-2">Profil Gör</a></div></div>
+                <div class="col-lg-3 col-md-4 col-sm-6"><div class="card text-center p-3 h-100 member-card"><img src="https://i.hizliresim.com/1n9s8x1.png" class="rounded-circle mx-auto mb-2" alt="Avatar" width="80"><h5 style="color: var(--secondary-neon);" class="mb-1">NeoKing</h5><span class="badge" style="background-color: var(--secondary-neon); color: black;">Moderatör</span><p class="text-white-50 small mt-2 mb-0">Toplam Mesaj: 2,110</p><a href="#" class="btn btn-sm btn-secondary-neon mt-2">Profil Gör</a></div></div>
+                <div class="col-lg-3 col-md-4 col-sm-6"><div class="card text-center p-3 h-100 member-card"><img src="https://via.placeholder.com/80/4a4e69/ffffff?text=U" class="rounded-circle mx-auto mb-2" alt="Avatar" width="80"><h5 style="color: var(--secondary-neon);" class="mb-1">AlphaUser</h5><span class="badge" style="background-color: var(--primary-neon);">Üye</span><p class="text-white-50 small mt-2 mb-0">Toplam Mesaj: 45</p><a href="#" class="btn btn-sm btn-secondary-neon mt-2">Profil Gör</a></div></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="giris-yap" class="d-none">
+        <div class="container my-5">
+            <h2 class="text-primary-neon text-center mb-4"><i class="bi bi-lock-fill me-2"></i> Sisteme Giriş Yap</h2>
+            <div class="card shadow-lg p-4 mx-auto" style="max-width: 400px;">
+                <form>
+                    <div class="mb-3"><label for="loginUsername" class="form-label">Kullanıcı Adı</label><div class="input-group"><span class="input-group-text"><i class="bi bi-person-fill"></i></span><input type="text" class="form-control" id="loginUsername" placeholder="Kullanıcı adı"></div></div>
+                    <div class="mb-4"><label for="loginPassword" class="form-label">Parola</label><div class="input-group"><span class="input-group-text"><i class="bi bi-key-fill"></i></span><input type="password" class="form-control" id="loginPassword" placeholder="Şifreniz"></div></div>
+                    <button type="submit" class="btn btn-premium w-100">Giriş Yap</button>
+                    <div class="text-center mt-3"><a href="#uye-ol" style="color: var(--secondary-neon);" class="small text-decoration-none">Hesabın yok mu? Hemen **Üye Ol**</a></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="uye-ol" class="d-none">
+        <div class="container my-5">
+            <h2 class="text-primary-neon text-center mb-4"><i class="bi bi-person-plus-fill me-2"></i> Aramıza Katıl</h2>
+            <div class="card shadow-lg p-4 mx-auto" style="max-width: 400px;">
+                <form>
+                    <div class="mb-3"><label for="registerUsername" class="form-label">Kullanıcı Adı</label><input type="text" class="form-control" id="registerUsername" placeholder="Kullanıcı adını gir"></div>
+                    <div class="mb-3"><label for="registerEmail" class="form-label">E-posta</label><input type="email" class="form-control" id="registerEmail" placeholder="Geçerli bir e-posta"></div>
+                    <div class="mb-3"><label for="registerPassword" class="form-label">Parola</label><input type="password" class="form-control" id="registerPassword" placeholder="Güçlü bir parola seç"></div>
+                    <div class="mb-4"><label for="confirmPassword" class="form-label">Parola Tekrar</label><input type="password" class="form-control" id="confirmPassword" placeholder="Parolanı tekrar gir"></div>
+                    <button type="submit" class="btn btn-premium w-100">Hesap Oluştur</button>
+                    <div class="text-center mt-3"><a href="#giris-yap" style="color: var(--secondary-neon);" class="small text-decoration-none">Zaten hesabın var mı? **Giriş Yap**</a></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <button id="aiChatButton" class="btn shadow-lg"><i class="bi bi-robot"></i></button>
+    <div id="aiChatWindow" class="d-none">
+        <div id="chatHeader">
+            <span>FORUM AI - Destek Botu</span>
+            <button class="btn btn-sm p-0" id="closeChat" style="color: var(--darkest-bg);"><i class="bi bi-x-lg fs-5"></i></button>
+        </div>
+        <div id="chatBody">
+            <div class="chat-message-ai">Merhaba! Ben Oyun Forumu'nun Yapay Zeka botuyum. Hangi konuda yardım istersin? (Örn: "Valorant taktği")</div>
+            <div class="chat-message-user">Valorant kategorisindeki en çok yorum alan konuyu bul.</div>
+            <div class="chat-message-ai">Anladım. "Yeni Gelen Ajanın Skilleri Hakkında İlk İzlenimler" konusu, 152 cevap ile en çok yorum alan konu olarak gözüküyor.</div>
+        </div>
+        <div id="chatInputArea" class="d-flex">
+            <input type="text" class="form-control me-2" placeholder="Sorunu yaz..." id="chatInput">
+            <button class="btn btn-secondary-neon" id="sendMessageButton">Gönder</button>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white-50 py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="me-3"><i class="bi bi-twitter-x social-icon fs-4"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-instagram social-icon fs-4"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-discord social-icon fs-4"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // HTML Elementleri ve Verileri Tanımlama
+            const sections = {
+                'ana-sayfa': document.getElementById('ana-sayfa'), 'valorant-kategori': document.getElementById('valorant-kategori'),
+                'uyeler-listesi': document.getElementById('uyeler-listesi'), 'giris-yap': document.getElementById('giris-yap'),
+                'uye-ol': document.getElementById('uye-ol'), 'haber-detay': document.getElementById('haber-detay'), 
+                'profil-detaylari': document.getElementById('ana-sayfa'), 'ayarlar': document.getElementById('ana-sayfa'), 
+                'cikis-yap': document.getElementById('ana-sayfa'),
+            };
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const aiChatButton = document.getElementById('aiChatButton');
+            const aiChatWindow = document.getElementById('aiChatWindow');
+            const chatBody = document.getElementById('chatBody');
+            const chatInput = document.getElementById('chatInput');
+
+            // Haber Detay İçerikleri (SPA için)
+            const newsData = {
+                '1': { title: 'VALORANT: Yeni Ajan "Cyborg" Çıktı! Erken İzlenimler', date: '29 Ekim 2025', author: 'NeoKing', tag: 'VALORANT', image: 'https://i.hizliresim.com/2mkt5ib.jpg', body: `Riot Games, uzun süredir beklenen yeni ajan **Cyborg**'u nihayet tanıttı. Ajanın siber yetenekleri ve keskin tasarımı, meta üzerindeki etkisini şimdiden tartışma konusu yaptı. İlk haftalık izlenimlere göre Cyborg, özellikle savunma tarafında güçlü bir kilitlenme ajanı olarak öne çıkıyor. Robotik koluyla attığı enerji kalkanları, rakiplerin alan kontrolünü ciddi şekilde zorluyor. <p>Profesyonel oyuncular, Cyborg'un yetenek setinin takım koordinasyonu gerektirdiğini, bu nedenle rastgele maçlarda (ranked) tam potansiyelini göstermesinin zor olacağını belirtiyor. Ancak espor arenasında, yeni ajan çokça göreceğimiz kesin.</p><p class="fw-bold" style="color: var(--secondary-neon);">Bu hafta sonu yapılacak olan Valorant şampiyonasında ajan yasağı olup olmayacağı ise merak konusu.</p>` },
+                '2': { title: 'CS2 Major Turnuvası Finalleri Ne Zaman Başlıyor? Takımlar Belli Oldu', date: '28 Ekim 2025', author: 'CyberGamer', tag: 'CS2', image: 'https://i.hizliresim.com/o1ch9st.jpg', body: `CS2'nin en büyük turnuvasının final aşamasına geçiliyor. Avrupa ve Kuzey Amerika'dan gelen 8 büyük takım, kupayı kaldırmak için kıyasıya mücadele edecek. Tüm takımların form durumu incelendiğinde, turnuvanın sürprizlere açık olacağı tahmin ediliyor. Yayın saatleri ve favori takım analizleri için forum sayfamı ziyaret etmeyi unutmayın!` },
+            };
+            
+            // --- 1. CHATBOT İŞLEVİ ---
+            aiChatButton.addEventListener('click', () => {
+                aiChatWindow.classList.toggle('d-none');
+                aiChatButton.innerHTML = aiChatWindow.classList.contains('d-none') ? '<i class="bi bi-robot"></i>' : '<i class="bi bi-x-circle-fill"></i>';
+            });
+            document.getElementById('closeChat').addEventListener('click', () => {
+                aiChatWindow.classList.add('d-none');
+                aiChatButton.innerHTML = '<i class="bi bi-robot"></i>';
+            });
+            document.getElementById('sendMessageButton').addEventListener('click', () => {
+                if (chatInput.value.trim() !== '') {
+                    const userMsg = document.createElement('div');
+                    userMsg.className = 'chat-message-user';
+                    userMsg.textContent = chatInput.value;
+                    chatBody.appendChild(userMsg);
+                    
+                    // Simüle edilmiş AI cevabı
+                    setTimeout(() => {
+                        const aiMsg = document.createElement('div');
+                        aiMsg.className = 'chat-message-ai';
+                        aiMsg.textContent = "Mesajın işleniyor... Fütüristik bir cevap hazırlanıyor!";
+                        chatBody.appendChild(aiMsg);
+                        chatBody.scrollTop = chatBody.scrollHeight;
+                    }, 1000);
+                    
+                    chatInput.value = '';
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+            });
+
+            // --- 2. HABER DETAY DOLDURMA ---
+            function loadNewsDetail(newsId) {
+                const data = newsData[newsId] || newsData['1'];
+                document.getElementById('news-detail-title').textContent = data.title;
+                document.getElementById('news-detail-date').textContent = data.date;
+                document.getElementById('news-detail-author').textContent = data.author;
+                document.getElementById('news-detail-tag').textContent = data.tag;
+                document.getElementById('news-detail-image').src = data.image;
+                document.getElementById('news-detail-body').innerHTML = data.body;
+                
+                // Neon Renk Kontrolü
+                const tagEl = document.getElementById('news-detail-tag');
+                tagEl.style.backgroundColor = (data.tag === 'CS2' || data.tag === 'Metin 2') ? 'var(--secondary-neon)' : 'var(--primary-neon)';
+                tagEl.style.color = (data.tag === 'CS2' || data.tag === 'Metin 2') ? 'black' : 'var(--text-color)';
+            }
+
+            // --- 3. ARAMA İŞLEVİ (Sadece Görünür Alanı Tarar) ---
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const searchTerm = searchInput.value.trim();
+                document.querySelectorAll('.highlight').forEach(el => { if (el.parentNode) { el.outerHTML = el.innerHTML; } });
+
+                if (searchTerm.length > 2) {
+                    const searchRegex = new RegExp(`(${searchTerm})`, 'gi');
+                    let foundElement = null;
+                    const visibleSection = document.querySelector('section:not(.d-none)');
+                    
+                    if (visibleSection) {
+                        const allElements = visibleSection.querySelectorAll('h1, h2, h5, p, a, span, div.news-item'); 
+                        for (let element of allElements) {
+                            if (element.textContent.match(searchRegex)) {
+                                if (!foundElement) {
+                                    element.innerHTML = element.innerHTML.replace(searchRegex, '<span class="highlight">$1</span>');
+                                    foundElement = element.querySelector('.highlight');
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (foundElement) {
+                        const offsetTop = foundElement.getBoundingClientRect().top + window.scrollY - 70;
+                        window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                    } else {
+                        alert(`"${searchTerm}" kelimesi bu sayfada bulunamadı.`);
+                    }
+                } else if (searchTerm.length > 0) {
+                    alert("Lütfen en az 3 karakter girin.");
+                }
+            });
+
+            // --- 4. TEK SAYFALI UYGULAMA (SPA) MANTIĞI ---
+            function showSection(targetId, newsId = null) {
+                document.querySelectorAll('section').forEach(section => section.classList.add('d-none'));
+                document.querySelectorAll('.highlight').forEach(el => { if (el.parentNode) { el.outerHTML = el.innerHTML; } });
+
+                const targetSection = sections[targetId];
+                if (targetSection) {
+                    targetSection.classList.remove('d-none');
+                    if (targetId === 'haber-detay' && newsId) {
+                        loadNewsDetail(newsId);
+                    }
+                    window.scrollTo(0, 0); 
+                }
+            }
+
+            // Sayfa Yükleme ve Yönlendirme Kontrolleri
+            let initialHash = window.location.hash.substring(1).split('?')[0] || 'ana-sayfa';
+            if (!sections[initialHash]) initialHash = 'ana-sayfa';
+            showSection(initialHash);
+
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const hash = this.getAttribute('href').substring(1);
+                    const targetId = hash.split('?')[0]; 
+                    const newsId = this.dataset.newsId; 
+
+                    if (sections[targetId]) {
+                        e.preventDefault(); 
+                        const newHash = newsId ? `${targetId}?id=${newsId}` : targetId;
+                        window.history.pushState(null, '', `#${newHash}`);
+                        showSection(targetId, newsId);
+                    } else if (this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Tarayıcı Geri/İleri Tuş Desteği
+            window.addEventListener('popstate', () => {
+                const hash = window.location.hash.substring(1) || 'ana-sayfa';
+                const parts = hash.split('?');
+                const targetId = parts[0];
+                let newsId = null;
+
+                if (parts.length > 1) {
+                    newsId = new URLSearchParams(parts[1]).get('id');
+                }
+                showSection(targetId, newsId);
+            });
+        });
+    </script>
+</body>
+</html>
