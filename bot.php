@@ -21,7 +21,7 @@ if (empty($userMessage)) {
 
 // API erişim anahtarımı ve istek yapacağım uç noktayı (endpoint) burada tanımladım.
 // Güvenlik Notu: Proje sunucuya taşındığında bu anahtarı ortam değişkenlerine (.env) taşıyacağım.
-$apiKey = "BURAYA_API_KEY_GELECEK"; 
+$apiKey = ""; 
 $apiUrl = "https://api.groq.com/openai/v1/chat/completions";
 
 // API'ye göndereceğim veri paketini hazırladım.
@@ -75,3 +75,4 @@ if ($httpCode !== 200) {
     echo json_encode(['reply' => $botReply]);
 }
 ?>
+
