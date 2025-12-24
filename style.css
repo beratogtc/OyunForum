@@ -1,105 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
 
 /**
- * Global Stil Dosyası (Global Stylesheet) - OyunForum
- * * Bu dosya, projenin tüm görsel kimliğini (Visual Identity) tanımlar.
- * Renk paleti olarak yüksek kontrastlı neon tonlar (Cyberpunk Theme) tercih edilmiştir.
- * Flexbox ve CSS Grid yapıları ile modern ve duyarlı (Responsive) bir düzen oluşturulmuştur.
+ * Global Stil Dosyası - Responsive Fixed
  */
 
-/* --- ANİMASYON KATMANI --- */
-/* Sayfa geçişlerinde yumuşak bir deneyim sunmak için özel keyframe animasyonları */
-@keyframes fadeIn { 
-    from { opacity: 0; transform: translateY(20px); } 
-    to { opacity: 1; transform: translateY(0); } 
-}
+/* --- ANİMASYONLAR --- */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-@keyframes slideInRight { 
-    from { transform: translateX(100%); opacity: 0; } 
-    to { transform: translateX(0); opacity: 1; } 
-}
+.fade-in-up { animation: fadeIn 0.6s ease-out forwards; }
+.animate-pulse { animation: pulse 2s infinite; }
 
-/* Sayfa yüklendiğinde içeriklerin aşağıdan yukarı doğru belirmesini sağlar */
-.fade-in-up { 
-    animation: fadeIn 0.6s ease-out forwards; 
-}
-
-/* --- CSS DEĞİŞKENLERİ (CSS VARIABLES) --- */
-/* Renk yönetimi merkezi olarak buradan kontrol edilir (Theming) */
+/* --- RENK PALETİ --- */
 :root {
-    --primary-neon: #ff3333;   /* Ana vurgu rengi: Ateş Kırmızısı */
-    --secondary-neon: #ffff33; /* İkincil vurgu: Neon Sarısı */
-    --darkest-bg: #0d000d;     /* Zemin rengi: Derin Siyah */
-    --text-color: #f0f0f0;     /* Okunabilirlik için kırık beyaz */
-    --glass-bg: rgba(255, 255, 255, 0.03); /* Glassmorphism efekti için taban */
+    --primary-neon: #ff3333; 
+    --secondary-neon: #ffff33; 
+    --darkest-bg: #0d000d; 
+    --text-color: #f0f0f0; 
+    --glass-bg: rgba(255, 255, 255, 0.03); 
 }
 
-/* --- TEMEL YAPILANDIRMA (RESET & BASE) --- */
+/* --- GENEL AYARLAR --- */
 body { 
     background-color: var(--darkest-bg) !important; 
     color: var(--text-color) !important; 
-    font-family: 'Rajdhani', sans-serif; /* Fütüristik font seçimi */
+    font-family: 'Rajdhani', sans-serif; 
     background-image: url('https://i.hizliresim.com/9n9u8r5.png'); 
     background-size: cover; 
-    background-attachment: fixed; /* Parallax benzeri sabit arka plan */
+    background-attachment: fixed; 
     position: relative;
-    overflow-x: hidden; /* Yatay kaydırma çubuğunu engelle */
+    overflow-x: hidden; /* Sağa sola kaymayı engeller */
 }
 
-/* Arka plan üzerine koyu bir katman (Overlay) atarak okunabilirliği artırdım */
 body::before { 
-    content: ""; 
-    position: absolute; 
-    top: 0; left: 0; width: 100%; height: 100%;
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.85); 
     background-image: linear-gradient(to top, rgba(255, 0, 0, 0.05), rgba(100, 0, 100, 0.05));
     z-index: -1; 
 }
 
-/* --- BİLEŞENLER (COMPONENTS) --- */
-
-/* Navigasyon ve Kart Yapıları - Glassmorphism Efekti */
-.navbar, .card, .member-card, #giris-yap .card, #uye-ol .card {
+/* --- BİLEŞENLER --- */
+.navbar, .card, .member-card {
     background-color: var(--glass-bg); 
     border: 1px solid var(--primary-neon); 
-    backdrop-filter: blur(10px); /* Arka planı bulanıklaştır */
-    border-radius: 0; /* Keskin hatlar (Cyberpunk estetiği) */
+    backdrop-filter: blur(10px); 
+    border-radius: 0; 
     z-index: 10;
 }
 
-/* Navbar Özelleştirmeleri */
-.navbar-brand { 
-    color: var(--primary-neon) !important; 
-    text-shadow: 0 0 5px var(--primary-neon); 
-    font-weight: 700; 
-}
-
-.nav-link { 
-    color: white !important; 
-    transition: 0.3s; 
-    text-transform: uppercase; 
-    letter-spacing: 1px;
-}
-
-/* Hover durumunda aktif link efekti */
-.nav-link:hover, .nav-link.active { 
-    color: var(--secondary-neon) !important; 
-    border-bottom: 2px solid var(--secondary-neon); 
-}
-
-.dropdown-menu { 
-    background-color: var(--darkest-bg); 
-    border: 1px solid var(--primary-neon); 
-    border-radius: 0; 
-}
-
+.navbar-brand { color: var(--primary-neon) !important; text-shadow: 0 0 5px var(--primary-neon); font-weight: 700; }
+.nav-link { color: white !important; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;}
+.nav-link:hover, .nav-link.active { color: var(--secondary-neon) !important; border-bottom: 2px solid var(--secondary-neon); }
+.dropdown-menu { background-color: var(--darkest-bg); border: 1px solid var(--primary-neon); border-radius: 0; }
 .dropdown-item { color: white; }
-.dropdown-item:hover { 
-    background-color: var(--primary-neon); 
-    color: var(--darkest-bg); 
-}
+.dropdown-item:hover { background-color: var(--primary-neon); color: var(--darkest-bg); }
 
-/* Hero Banner Alanı */
+/* --- HERO BANNER --- */
 .forum-banner {
     background: var(--darkest-bg); 
     height: 250px; 
@@ -108,222 +65,133 @@ body::before {
     justify-content: center;
     border-bottom: 5px solid var(--primary-neon); 
     text-shadow: 0 0 15px var(--primary-neon), 0 0 30px var(--secondary-neon);
-    font-size: 3rem; 
-    font-weight: 700; 
 }
 
-/* --- BUTONLAR (BUTTONS) --- */
+/* --- BUTONLAR --- */
 .btn-premium {
-    background-color: var(--primary-neon); 
-    color: var(--darkest-bg); 
-    box-shadow: 0 0 10px var(--primary-neon); 
-    border: none; 
-    border-radius: 0; 
-    transition: all 0.2s; 
-    font-weight: 600;
+    background-color: var(--primary-neon); color: var(--darkest-bg); box-shadow: 0 0 10px var(--primary-neon); 
+    border: none; border-radius: 0; transition: all 0.2s; font-weight: 600;
 }
-
-.btn-premium:hover { 
-    background-color: var(--secondary-neon); 
-    box-shadow: 0 0 15px var(--secondary-neon); 
-}
+.btn-premium:hover { background-color: var(--secondary-neon); box-shadow: 0 0 15px var(--secondary-neon); }
 
 .btn-secondary-neon {
-    color: var(--secondary-neon); 
-    border: 1px solid var(--secondary-neon); 
-    background-color: transparent; 
-    border-radius: 0; 
-    font-weight: 600;
+    color: var(--secondary-neon); border: 1px solid var(--secondary-neon); background-color: transparent; border-radius: 0; font-weight: 600;
 }
+.btn-secondary-neon:hover { color: var(--darkest-bg); background-color: var(--secondary-neon); box-shadow: 0 0 5px var(--secondary-neon); }
 
-.btn-secondary-neon:hover { 
-    color: var(--darkest-bg); 
-    background-color: var(--secondary-neon); 
-    box-shadow: 0 0 5px var(--secondary-neon); 
-}
+/* --- HABERLER & KARTLAR --- */
+.news-item { transition: background-color 0.3s; }
+.news-item:hover { background-color: rgba(255, 255, 51, 0.05); }
+.game-card-img { height: 200px; object-fit: cover; width: 100%; filter: brightness(0.6) saturate(1.2); }
 
-/* --- İÇERİK BİLEŞENLERİ --- */
+/* --- FORMLAR --- */
+.form-control, .input-group-text { background-color: var(--darkest-bg) !important; border: 1px solid var(--secondary-neon) !important; color: var(--text-color) !important; border-radius: 0 !important; }
+.form-control:focus { box-shadow: 0 0 10px var(--primary-neon); border-color: var(--primary-neon); }
 
-/* Haber Listesi */
-.news-item { 
-    border-left: 3px solid var(--secondary-neon); 
-    padding-left: 15px; 
-    margin-bottom: 10px; 
-    transition: background-color 0.3s; 
-}
-
-.news-item:hover { 
-    background-color: rgba(255, 255, 51, 0.05); 
-}
-
-.news-title { 
-    color: var(--secondary-neon) !important; 
-    font-weight: 600; 
-    text-decoration: none; 
-}
-
-/* Oyun Kartları */
-.game-card-img { 
-    height: 200px; 
-    object-fit: cover; 
-    width: 100%; 
-    filter: brightness(0.6) saturate(1.2); /* Görselleri tema ile uyumlu hale getir */
-}
-
-.card-title { 
-    color: var(--secondary-neon) !important; 
-    font-weight: 700; 
-}
-
-/* Form Elemanları */
-.form-control, .input-group-text { 
-    background-color: var(--darkest-bg) !important; 
-    border: 1px solid var(--secondary-neon) !important; 
-    color: var(--text-color) !important; 
-    border-radius: 0 !important; 
-}
-
-.form-control:focus { 
-    box-shadow: 0 0 10px var(--primary-neon); 
-    border-color: var(--primary-neon); 
-}
-
-/* --- YAPAY ZEKA SOHBET MODÜLÜ (CHATBOT UI) --- */
+/* --- CHAT BOT UI --- */
 #aiChatButton {
-    position: fixed; bottom: 20px; right: 20px; z-index: 1000; 
-    border-radius: 50%; width: 60px; height: 60px;
-    box-shadow: 0 0 15px var(--secondary-neon); 
-    background-color: var(--secondary-neon);
-    color: var(--darkest-bg); 
-    font-size: 1.8rem; 
-    border: 3px solid var(--darkest-bg); 
-    transition: transform 0.3s;
+    position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 50%; width: 60px; height: 60px;
+    box-shadow: 0 0 15px var(--secondary-neon); background-color: var(--secondary-neon); color: var(--darkest-bg); font-size: 1.8rem; border: 3px solid var(--darkest-bg); transition: transform 0.3s;
 }
-
 #aiChatWindow {
-    position: fixed; bottom: 90px; right: 20px; 
-    width: 350px; max-width: 90%; height: 450px; z-index: 999;
-    background-color: var(--darkest-bg); 
-    border: 2px solid var(--primary-neon); 
-    box-shadow: 0 0 25px var(--primary-neon);
-    border-radius: 0; 
-    display: none; /* Başlangıçta gizli */
-    flex-direction: column;
+    position: fixed; bottom: 90px; right: 20px; width: 350px; max-width: 90%; height: 450px; z-index: 999;
+    background-color: var(--darkest-bg); border: 2px solid var(--primary-neon); box-shadow: 0 0 25px var(--primary-neon); border-radius: 0; display: none; flex-direction: column;
 }
-
-#chatHeader { 
-    background-color: var(--primary-neon); 
-    color: var(--darkest-bg); 
-    font-weight: 700; 
-    padding: 10px 15px; 
-    display: flex; justify-content: space-between; align-items: center; 
-}
-
-#chatBody { 
-    flex-grow: 1; 
-    padding: 15px; 
-    overflow-y: auto; 
-    background-color: rgba(255, 255, 255, 0.01); 
-}
-
-/* Mesaj Balonları */
-.chat-message-ai { text-align: left; margin: 5px 0; }
-.chat-message-ai span { 
-    background: #333; color: white; 
-    padding: 8px 12px; border-radius: 10px; 
-    border-left: 3px solid var(--secondary-neon); 
-    display: inline-block; max-width: 85%; 
-}
-
-.chat-message-user { text-align: right; margin: 5px 0; }
+#chatHeader { background-color: var(--primary-neon); color: var(--darkest-bg); font-weight: 700; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+#chatBody { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: rgba(255, 255, 255, 0.01); }
+.chat-message-ai span { background: #333; color: white; padding: 8px 12px; border-radius: 10px; border-left: 3px solid var(--secondary-neon); display: inline-block; max-width: 85%; }
 .chat-message-user span { 
-    background: var(--primary-neon); color: var(--darkest-bg); 
-    padding: 8px 12px; border-radius: 10px; 
-    display: inline-block; max-width: 85%; font-weight: 600; 
+    background: var(--primary-neon); 
+    color: var(--darkest-bg); 
+    padding: 8px 12px; 
+    border-radius: 10px; 
+    max-width: 85%; 
+    font-weight: 600; 
+    text-align: right; 
+    float: right; 
+    margin-bottom: 5px;
 }
+.chat-message-user { overflow: hidden; margin: 5px 0; }
 
-/* Tablolar */
-.thread-table th { 
-    color: var(--secondary-neon); 
-    border-bottom: 1px solid var(--primary-neon); 
-}
-.thread-table td { 
-    color: #ccc; 
-    vertical-align: middle; 
-}
-.badge { font-weight: normal; font-size: 0.8em; }
-
-/* --- BİLDİRİM SİSTEMİ (TOAST NOTIFICATIONS) --- */
+/* --- TOAST --- */
 #customToast {
-    position: fixed; top: 90px; right: 20px; z-index: 9999;
-    background: rgba(0, 0, 0, 0.95); border-left: 5px solid var(--secondary-neon);
-    padding: 15px 25px; color: white; 
-    box-shadow: 0 0 20px rgba(255, 255, 51, 0.2);
-    display: none; align-items: center; gap: 10px; font-size: 1.1rem;
-    animation: slideInRight 0.5s ease-out; border-radius: 5px;
+    position: fixed; top: 90px; right: 20px; z-index: 9999; background: rgba(0, 0, 0, 0.95); border-left: 5px solid var(--secondary-neon);
+    padding: 15px 25px; color: white; box-shadow: 0 0 20px rgba(255, 255, 51, 0.2); display: none; align-items: center; gap: 10px; font-size: 1.1rem; animation: slideInRight 0.5s ease-out; border-radius: 5px;
 }
 #customToast.success { border-color: #00ff00; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
 #customToast.error { border-color: #ff0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
 
-/* --- RESPONSIVE DÜZENLEMELER (MEDIA QUERIES) --- */
-/* Mobil cihazlarda container kenar boşluklarını ayarla */
+/* --- LOADER --- */
+#preloader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050507; z-index: 999999;
+    display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.8s ease, visibility 0.8s;
+}
+.loader-text { font-family: 'Rajdhani', sans-serif; font-size: 3.5rem; font-weight: 800; color: #fff; letter-spacing: 5px; text-shadow: 0 0 15px #00f2ff; position: relative; }
+.loader-bar { width: 200px; height: 4px; background: rgba(255, 255, 255, 0.1); margin-top: 15px; border-radius: 2px; position: relative; overflow: hidden; }
+.loader-bar::after { content: ''; position: absolute; top: 0; left: 0; width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; animation: loadProgress 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+.loader-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+@keyframes loadProgress { 0% { width: 0%; } 50% { width: 60%; } 100% { width: 100%; } }
+
+/* --- EKSTRA EFEKTLER --- */
+.text-bright { color: #fff !important; text-shadow: 0 0 5px rgba(255,255,255,0.5); } 
+.hover-glow:hover { text-shadow: 0 0 10px #00f2ff; color: #00f2ff !important; } 
+.sidebar-widget { background: rgba(0,0,0,0.6); border: 1px solid var(--primary-neon); } 
+.stat-box { transition: transform 0.3s; } 
+.stat-box:hover { transform: translateY(-5px); border-color: var(--secondary-neon) !important; } 
+.member-link { text-decoration: none; display: block; transition: transform 0.3s; } 
+.member-link:hover { transform: translateY(-5px); } 
+.nav-pills .nav-link.active { background-color: var(--primary-neon); color: #000; font-weight: bold; } 
+.nav-pills .nav-link { color: #fff; border: 1px solid rgba(255,255,255,0.1); margin-right: 5px; margin-bottom: 5px; }
+
+/* =========================================
+    RESPONSIVE (MOBİL UYUM) KURALLARI 
+   ========================================= */
+
+/* Tablet ve Küçük Laptoplar (max-width: 991px) */
 @media (max-width: 991px) {
     .container { padding-left: 15px; padding-right: 15px; }
+    .forum-banner { height: 200px; font-size: 2rem; }
+    .forum-banner h1 { font-size: 2.5rem !important; }
+    .card { padding: 1.5rem !important; }
 }
 
-/* --- YÜKLEME EKRANI (PRELOADER) --- */
-/* Sayfa açılışında gösterilen tam ekran animasyon */
-#preloader {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #050507; 
-    z-index: 999999; /* En üst katmanda kalmasını sağla */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    transition: opacity 0.8s ease, visibility 0.8s;
+/* Mobil Telefonlar (max-width: 767px) */
+@media (max-width: 767px) {
+    /* Banner yazılarını küçült */
+    .forum-banner h1 { font-size: 1.8rem !important; text-shadow: 0 0 10px red; }
+    .forum-banner p { font-size: 0.9rem; }
+    
+    /* Tablolarda taşmayı engelle ve kaydırma çubuğu ekle */
+    .table-responsive { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .thread-table { min-width: 600px; } /* Tabloyu zorla genişlet ki kaydırma çıksın */
+    
+    /* Haberler kısmını alt alta al */
+    .news-item { flex-direction: column; align-items: flex-start !important; }
+    .news-item div { margin-bottom: 10px; }
+    .news-item a.btn { width: 100%; }
+
+    /* Butonları tam ekran yap */
+    .d-flex.gap-2 { gap: 0.5rem !important; }
+    
+    /* Navbar logosunu küçült */
+    .navbar-brand { font-size: 1.5rem !important; }
+    
+    /* Chat bot penceresini tam ekran yapma ama küçült */
+    #aiChatWindow { width: 90%; right: 5%; bottom: 80px; height: 60vh; }
+    #aiChatButton { width: 50px; height: 50px; font-size: 1.5rem; bottom: 15px; right: 15px; }
 }
 
-.loader-text {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: 5px;
-    text-shadow: 0 0 15px #00f2ff; /* Neon mavi parlama efekti */
-    position: relative;
-}
-
-/* İlerleme Çubuğu (Progress Bar) */
-.loader-bar {
-    width: 200px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    margin-top: 15px;
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
-}
-
-.loader-bar::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 0%; height: 100%;
-    background: #00f2ff; 
-    box-shadow: 0 0 10px #00f2ff;
-    animation: loadProgress 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-}
-
-/* JS ile tetiklenen gizleme sınıfı */
-.loader-hide {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-@keyframes loadProgress {
-    0% { width: 0%; }
-    50% { width: 60%; }
-    100% { width: 100%; }
+/* Çok Küçük Ekranlar (iPhone SE vb. - max-width: 450px) */
+@media (max-width: 450px) {
+    /* Giriş ve Kayıt kutularındaki padding'i azalt */
+    #giris-yap .card, #uye-ol .card { padding: 1.5rem !important; }
+    
+    /* Başlıkları küçült */
+    h1 { font-size: 1.8rem !important; }
+    h2 { font-size: 1.5rem !important; }
+    h3 { font-size: 1.3rem !important; }
+    
+    /* İstatistik kutularını alt alta al veya küçült */
+    .stat-box h3 { font-size: 1.2rem; }
+    .stat-box span { font-size: 0.6rem; }
 }
