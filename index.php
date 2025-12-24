@@ -1,14 +1,25 @@
 <?php
+/**
+ * Ana Kontrolcü (Main Controller) - OyunForum
+ * * Bu dosya, uygulamanın giriş noktasıdır. Sayfa yönlendirmeleri (Routing),
+ * oturum yönetimi, kullanıcı yetkilendirmesi ve görünüm (View) katmanının
+ * render edilmesi işlemlerini burada merkezi olarak yönettim.
+ */
+
 session_start();
 require 'db.php'; 
 
-// --- LOADING KONTROL ---
+// --- LOADING EKRANI KONTROL MEKANİZMASI ---
+// Kullanıcı deneyimini (UX) iyileştirmek adına, form gönderimlerinde veya 
+// işlem sonrası geri bildirimlerde (Toast mesajları) loading ekranını devre dışı bıraktım.
 $loader_goster = true;
 if (isset($_GET['durum']) || $_SERVER['REQUEST_METHOD'] == 'POST') {
     $loader_goster = false;
 }
 
-// --- 1. GÜVENLİK VE GİRİŞ KONTROLLERİ ---
+// --- 1. GÜVENLİK VE OTOMATİK GİRİŞ ---
+// Eğer aktif bir oturum yoksa ancak 'Beni Hatırla' çerezi mevcutsa,
+// veritabanından kullanıcıyı doğrulayıp oturumu otomatik olarak başlattım.
 if (!isset($_SESSION['oturum']) && isset($_COOKIE['user_auth'])) {
     $cerez_kadi = base64_decode($_COOKIE['user_auth']);
     $sorgu = $db->prepare("SELECT * FROM kullanicilar WHERE kullanici_adi = ?");
@@ -24,7 +35,9 @@ if (!isset($_SESSION['oturum']) && isset($_COOKIE['user_auth'])) {
     }
 }
 
-// --- 2. FONKSİYONLAR ---
+// --- 2. YARDIMCI FONKSİYONLAR (HELPERS) ---
+// Kod tekrarını önlemek için rütbe ve kategori görsellerini üreten fonksiyonları burada tanımladım.
+
 function rutbeRozeti($rutbe) {
     if ($rutbe == 'admin') return '<span class="badge bg-danger ms-2 shadow-sm"><i class="bi bi-shield-fill"></i> YÖNETİCİ</span>';
     if ($rutbe == 'mod') return '<span class="badge bg-info text-dark ms-2 shadow-sm"><i class="bi bi-hammer"></i> MODERATÖR</span>'; 
@@ -32,13 +45,15 @@ function rutbeRozeti($rutbe) {
 }
 
 function kategoriRozeti($kat) {
+    // Kategoriye özel renk atamaları (Conditional Styling)
     if($kat == 'Valorant') return 'bg-danger shadow-sm';
     if($kat == 'CS2') return 'bg-warning text-dark shadow-sm';
     if($kat == 'Metin2') return 'bg-info text-dark shadow-sm';
     return 'bg-secondary';
 }
 
-// Kullanıcı İstatistiklerini Hesapla
+// Kullanıcı Seviye ve İstatistik Algoritması
+// Kullanıcının toplam yorum ve konu sayısına göre dinamik bir Level ve XP hesaplaması yaptım.
 function getUserStats($db, $user_id) {
     try {
         $msg = $db->prepare("SELECT COUNT(*) FROM yorumlar WHERE kullanici_id = ?");
@@ -49,9 +64,10 @@ function getUserStats($db, $user_id) {
         $konu->execute([$user_id]);
         $k_sayisi = $konu->fetchColumn();
         
+        // Algoritma: Her 5 etkileşim 1 Level kazandırır.
         $total = $m_sayisi + $k_sayisi;
         $lvl = floor($total / 5) + 1;
-        $xp = ($total % 5) * 20;
+        $xp = ($total % 5) * 20; // %20'lik dilimler halinde XP barı
         
         return ['msg' => $m_sayisi, 'konu' => $k_sayisi, 'lvl' => $lvl, 'xp' => $xp];
     } catch (PDOException $e) {
@@ -59,7 +75,8 @@ function getUserStats($db, $user_id) {
     }
 }
 
-// --- 3. OTURUM SAHİBİ BİLGİLERİ ---
+// --- 3. OTURUM SAHİBİ VERİLERİ ---
+// Giriş yapmış kullanıcının güncel verilerini her sayfa yenilemesinde tazeledim.
 $my_stats = ['lvl'=>1, 'xp'=>0];
 if (isset($_SESSION['oturum'])) {
     $sorgu = $db->prepare("SELECT rutbe, kayit_tarihi FROM kullanicilar WHERE id = ?");
@@ -72,22 +89,26 @@ if (isset($_SESSION['oturum'])) {
     $my_stats = getUserStats($db, $_SESSION['user_id']);
 }
 
+// Sayfa Yönlendirme Mantığı (Routing)
+// URL'deki 'sayfa' parametresini alarak hangi içeriğin yükleneceğini belirliyorum.
 $aktif_sayfa = isset($_GET['sayfa']) ? $_GET['sayfa'] : 'ana-sayfa';
 
-// --- 4. GENEL İSTATİSTİKLER ---
+// --- 4. GENEL FORUM İSTATİSTİKLERİ ---
+// Ana sayfada ve sidebar'da göstermek üzere toplam verileri çektim.
 try {
     $stat_konu = $db->query("SELECT COUNT(*) FROM konular")->fetchColumn();
     $stat_yorum = $db->query("SELECT COUNT(*) FROM yorumlar")->fetchColumn();
     $stat_uye = $db->query("SELECT COUNT(*) FROM kullanicilar")->fetchColumn();
 } catch (PDOException $e) { $stat_konu = 0; $stat_yorum = 0; $stat_uye = 0; }
 
-// --- 5. ÜYELERİ ÇEK ---
+// --- 5. ÜYE LİSTESİ ---
+// "Son Kayıt Olanlar" widget'ı için veritabanından son 8 üyeyi limiti ile çektim.
 try {
     $uye_sorgu = $db->query("SELECT * FROM kullanicilar ORDER BY kayit_tarihi DESC LIMIT 8");
     $uyeler = $uye_sorgu->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) { $uyeler = []; }
 
-// Sidebar İpucu
+// Dinamik İçerik: Her sayfa yenilemesinde değişen ipuçları dizisi
 $ipuclari = [
     "Valorant'ta koşarak ateş etme, sabit dur!",
     "CS2'de smoke içi bombayı çözmek için 'E' tuşuna basılı tut.",
@@ -97,7 +118,8 @@ $ipuclari = [
 ];
 $gunun_ipucu = $ipuclari[array_rand($ipuclari)];
 
-// Haberler
+// Statik Haber Verileri (Demo Amaçlı)
+// İleride burası da veritabanından çekilebilir.
 $haberler = [
     1 => ['baslik' => 'VALORANT: Yeni Ajan "Cyborg" İncelemesi', 'tarih' => '23.12.2025', 'resim' => 'https://i.hizliresim.com/2mkt5ib.jpg', 'icerik' => 'Riot Games yeni ajanı tanıttı... Detaylar siber ağda hızla yayılıyor.'],
     2 => ['baslik' => 'CS2 Major Turnuvası Başlıyor', 'tarih' => '22.12.2025', 'resim' => 'https://i.hizliresim.com/o1ch9st.jpg', 'icerik' => 'Dünyanın en iyi takımları kupa için karşı karşıya geliyor...'],
@@ -114,6 +136,7 @@ $haberler = [
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
+    
     <style>
         .text-bright { color: #fff !important; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
         .hover-glow:hover { text-shadow: 0 0 10px #00f2ff; color: #00f2ff !important; }
@@ -124,6 +147,8 @@ $haberler = [
         .member-link:hover { transform: translateY(-5px); }
         .nav-pills .nav-link.active { background-color: var(--primary-neon); color: #000; font-weight: bold; box-shadow: 0 0 15px var(--primary-neon); }
         .nav-pills .nav-link { color: #fff; border: 1px solid rgba(255,255,255,0.1); margin-right: 5px; }
+        
+        /* Loading kontrolü: PHP tarafındaki değişken true değilse CSS ile gizledim */
         <?php if(!$loader_goster): ?> #preloader { display: none !important; } <?php endif; ?>
     </style>
 </head>
@@ -167,6 +192,7 @@ $haberler = [
                 <div class="text-white me-4 d-none d-lg-block" style="font-family:'Rajdhani'; font-weight:bold; letter-spacing:1px;">
                     <i class="bi bi-clock text-secondary-neon me-1"></i> <span id="liveClock">00:00:00</span>
                 </div>
+                
                 <?php if(isset($_SESSION['oturum'])): ?>
                     <div class="dropdown"> 
                         <a class="nav-link dropdown-toggle text-white border border-primary px-3 py-2" href="#" data-bs-toggle="dropdown" style="background: rgba(0, 242, 255, 0.1);">
@@ -224,25 +250,15 @@ $haberler = [
                                 <?php endforeach; ?>
                             </div>
                         </div>
+                        
                         <h2 class="text-primary-neon mb-4 border-bottom border-secondary pb-2"><i class="bi bi-grid-3x3-gap-fill me-2"></i> OPERASYON BÖLGELERİ</h2>
                         <div class="row g-4">
-                            <div class="col-md-4">
-                                <div class="card h-100 member-card overflow-hidden border-danger">
-                                    <div class="position-relative">
-                                        <img src="https://i.hizliresim.com/2mkt5ib.jpg" class="card-img-top game-card-img">
-                                        <div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 fw-bold">FPS</div>
-                                    </div>
-                                    <div class="card-body text-center bg-dark">
-                                        <h4 class="card-title text-white">VALORANT</h4>
-                                        <p class="small text-white opacity-75">Taktiksel Nişancı</p>
-                                        <a href="index.php?sayfa=forum&kategori=Valorant" class="btn btn-outline-danger w-100 fw-bold">GÖREVE GİT</a>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="col-md-4"><div class="card h-100 member-card overflow-hidden border-danger"><div class="position-relative"><img src="https://i.hizliresim.com/2mkt5ib.jpg" class="card-img-top game-card-img"><div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 fw-bold">FPS</div></div><div class="card-body text-center bg-dark"><h4 class="card-title text-white">VALORANT</h4><p class="small text-white opacity-75">Taktiksel Nişancı</p><a href="index.php?sayfa=forum&kategori=Valorant" class="btn btn-outline-danger w-100 fw-bold">GÖREVE GİT</a></div></div></div>
                             <div class="col-md-4"><div class="card h-100 member-card overflow-hidden border-warning"><div class="position-relative"><img src="https://i.hizliresim.com/o1ch9st.jpg" class="card-img-top game-card-img"><div class="position-absolute top-0 end-0 bg-warning text-dark px-2 py-1 fw-bold">FPS</div></div><div class="card-body text-center bg-dark"><h4 class="card-title text-white">CS2</h4><p class="small text-white opacity-75">Efsanevi Rekabet</p><a href="index.php?sayfa=forum&kategori=CS2" class="btn btn-outline-warning w-100 fw-bold">GÖREVE GİT</a></div></div></div>
                             <div class="col-md-4"><div class="card h-100 member-card overflow-hidden border-info"><div class="position-relative"><img src="https://i.hizliresim.com/r5su7dq.jpg" class="card-img-top game-card-img"><div class="position-absolute top-0 end-0 bg-info text-dark px-2 py-1 fw-bold">MMO</div></div><div class="card-body text-center bg-dark"><h4 class="card-title text-white">METİN 2</h4><p class="small text-white opacity-75">Doğunun Macerası</p><a href="index.php?sayfa=forum&kategori=Metin2" class="btn btn-outline-info w-100 fw-bold">GÖREVE GİT</a></div></div></div>
                         </div>
                     </div>
+                    
                     <div class="col-lg-3">
                         <div class="card mb-4 p-3 shadow-lg border-secondary bg-dark sidebar-widget">
                             <h5 class="text-secondary-neon mb-3 fw-bold"><i class="bi bi-hdd-network me-2"></i> SUNUCULAR</h5>
@@ -507,24 +523,45 @@ $haberler = [
                             <div class="tab-pane fade show active" id="hesap">
                                 <h4 class="text-primary-neon mb-4 border-bottom border-secondary pb-2">HESAP BİLGİLERİ</h4>
                                 <form action="islem.php" method="POST">
-                                    <div class="mb-3"><label class="text-white-50 small mb-1">KOD ADI (Değiştirilemez)</label><input type="text" class="form-control bg-dark text-white-50 border-secondary" value="<?php echo $_SESSION['kullanici_adi']; ?>" disabled></div>
-                                    <div class="mb-4"><label class="text-white-50 small mb-1">E-POSTA ADRESİ</label><input type="email" name="eposta" class="form-control" value="<?php echo $_SESSION['eposta']; ?>"></div>
+                                    <div class="mb-3">
+                                        <label class="text-white-50 small mb-1">KOD ADI (Değiştirilemez)</label>
+                                        <input type="text" class="form-control bg-dark text-white-50 border-secondary" value="<?php echo $_SESSION['kullanici_adi']; ?>" disabled>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="text-white-50 small mb-1">E-POSTA ADRESİ</label>
+                                        <input type="email" name="eposta" class="form-control" value="<?php echo $_SESSION['eposta']; ?>">
+                                    </div>
                                     <button type="submit" name="ayarlari_guncelle" class="btn btn-primary px-4 fw-bold">BİLGİLERİ GÜNCELLE</button>
                                 </form>
                             </div>
                             <div class="tab-pane fade" id="guvenlik">
                                 <h4 class="text-danger mb-4 border-bottom border-secondary pb-2">ŞİFRE DEĞİŞİKLİĞİ</h4>
                                 <form action="islem.php" method="POST">
-                                    <div class="mb-3"><label class="text-white-50 small mb-1">MEVCUT ŞİFRE</label><input type="password" name="mevcut_sifre" class="form-control"></div>
-                                    <div class="mb-4"><label class="text-white-50 small mb-1">YENİ ŞİFRE</label><input type="password" name="yeni_sifre" class="form-control"></div>
+                                    <div class="mb-3">
+                                        <label class="text-white-50 small mb-1">MEVCUT ŞİFRE</label>
+                                        <input type="password" name="mevcut_sifre" class="form-control">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="text-white-50 small mb-1">YENİ ŞİFRE</label>
+                                        <input type="password" name="yeni_sifre" class="form-control">
+                                    </div>
                                     <button type="submit" name="ayarlari_guncelle" class="btn btn-danger px-4 fw-bold">ŞİFREYİ YENİLE</button>
                                 </form>
                             </div>
                             <div class="tab-pane fade" id="gizlilik">
                                 <h4 class="text-success mb-4 border-bottom border-secondary pb-2">GİZLİLİK AYARLARI</h4>
-                                <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked><label class="form-check-label text-white" for="flexSwitchCheckChecked">Çevrimiçi durumumu göster</label></div>
-                                <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="mailCheck" checked><label class="form-check-label text-white" for="mailCheck">E-posta bildirimlerini al</label></div>
-                                <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="profilCheck"><label class="form-check-label text-white" for="profilCheck">Profilimi sadece üyelere göster</label></div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
+                                    <label class="form-check-label text-white" for="flexSwitchCheckChecked">Çevrimiçi durumumu göster</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="mailCheck" checked>
+                                    <label class="form-check-label text-white" for="mailCheck">E-posta bildirimlerini al</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="profilCheck">
+                                    <label class="form-check-label text-white" for="profilCheck">Profilimi sadece üyelere göster</label>
+                                </div>
                                 <button class="btn btn-success mt-3 px-4 fw-bold">TERCİHLERİ KAYDET</button>
                             </div>
                         </div>
